@@ -13,7 +13,24 @@ from flask import Flask, Response, jsonify, render_template_string, request
 APP_DIR = Path(__file__).resolve().parent
 DATABASE = APP_DIR / "reponses.db"
 
+
+def init_database() -> None:
+    with sqlite3.connect(DATABASE) as connection:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS responses (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                submitted_at TEXT NOT NULL,
+                answers TEXT NOT NULL
+            )
+            """
+        )
+
+
+
 app = Flask(__name__)
+
+init_database()
 
 QUESTIONS = [
     {"id": "age", "label": "Quel âge avez-vous ?", "type": "radio", "options": ["Moins de 21 ans", "21–24 ans", "25–34 ans", "35–44 ans", "45–54 ans", "55 ans ou plus"]},
@@ -42,19 +59,6 @@ SECTIONS = [
     {"title": "Votre soirée", "subtitle": "Rythme, activités et univers musical.", "ids": ["time", "days", "activities", "music"]},
     {"title": "Votre budget", "subtitle": "Les derniers détails pour construire une offre juste.", "ids": ["budget", "entryPrice", "groupSize", "barriers", "priority"]},
 ]
-
-
-def init_database() -> None:
-    with sqlite3.connect(DATABASE) as connection:
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS responses (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                submitted_at TEXT NOT NULL,
-                answers TEXT NOT NULL
-            )
-            """
-        )
 
 
 HTML = r"""
@@ -223,5 +227,4 @@ def export_csv():
 
 
 if __name__ == "__main__":
-    init_database()
     app.run(host="127.0.0.1", port=5000, debug=True)
